@@ -9,17 +9,18 @@ for i in range(TOTAL_NODES):
     DATA[i] = f"Vinicius{i}"
 
 
-def hash(value: str):
-    hash_code = 0
-    for char in value:
-        hash_code = (hash_code * 31 + ord(char)) % TOTAL_NODES
-    return hash_code
+class Hasher:
+    def hash(value: str) -> int:
+        hash_code = 0
+        for char in value:
+            hash_code = (hash_code * 31 + ord(char)) % TOTAL_NODES
+        return hash_code
 
 
 class Node:
-    def __init__(self, key: int = -1, value: str = ""):
+    def __init__(self, key: int = -1):
         self.key: int = key
-        self.value: str = value
+        self.value: List[str] = []
         self.conjunct: Dict[int, str] = dict()
         self.active: bool = False
         self.next: int = -1
@@ -27,11 +28,25 @@ class Node:
 
 class Chord:
     def __init__(self):
-        self.actives: List[int] = [1, 6, 11, 13]
+        self.actives: List[int] = [1, 6, 10, 11, 13]
         self.ring: List[Node] = []
 
     def add_node(self, node: Node):
         self.ring.append(node)
+
+    def add_value(self, v: str):
+        hash_key = Hasher.hash(v)
+        self.ring[hash_key].value.append(v)
+        return hash_key
+
+    def active_node(self, node: int):
+        if node >= 0 and node < TOTAL_NODES and node not in self.actives:
+            self.actives.append(node)
+            self.actives.sort()
+            self.ring[node].active = True
+            self.active_nodes()
+            return 1
+        return -1
 
     def active_nodes(self):
         curr_idx = self.actives[0]
@@ -73,7 +88,8 @@ class Chord:
         steps = 0
         while steps < len(self.actives):
             node = self.ring[current_key]
-            if value in node.conjunct.values():
+            iterable = sum([node.conjunct[i] for i in node.conjunct], [])
+            if value in iterable:
                 return current_key
             else:
                 current_key = node.next
@@ -100,6 +116,8 @@ if __name__ == "__main__":
         print("2 - Cria nova rede")
         print("3 - Display")
         print("4 - Buscar")
+        print("5 - Inserir um novo valor")
+        print("6 - Ativar nó")
         code = int(input("Digite o número o código: "))
         match code:
             case 1:
@@ -107,9 +125,11 @@ if __name__ == "__main__":
             case 2:
                 chord = Chord()
                 for i in range(TOTAL_NODES):
-                    node = Node(i, DATA[i])
-                    chord.add_node(node)
+                    chord.add_node(Node(i))
                 chord.active_nodes()
+
+                for data in DATA:
+                    chord.add_value(data)
                 message = "Criado com sucesso"
                 os.system("clear")
             case 3:
@@ -123,6 +143,20 @@ if __name__ == "__main__":
                     message = "Valor não encontrado"
                 else:
                     message = f"Valor encontrado no nó {node}"
+                os.system("clear")
+            case 5:
+                value = str(input("Digite o novo valor a ser inserido: "))
+                node = chord.add_value(value)
+                message = f"Inserido com sucesso no nó {node}"
+                os.system("clear")
+            case 6:
+                value = int(input("Digite o nó que deseja ativar: "))
+                result = chord.active_node(value)
+                if result == -1:
+                    message = f"Esse nó é inválido"
+                else:
+                    message = f"Nó ativado com  sucesso"
+
                 os.system("clear")
             case _:
                 message = "Opção inválida"
