@@ -3,7 +3,7 @@ from typing import Dict, List
 
 TOTAL_NODES = 16
 
-DATA = [None] * 16
+DATA = [None] * TOTAL_NODES
 
 for i in range(TOTAL_NODES):
     DATA[i] = f"Vinicius{i}"
@@ -28,7 +28,7 @@ class Node:
 
 class Chord:
     def __init__(self):
-        self.actives: List[int] = [1, 6, 10, 11, 13]
+        self.actives: List[int] = [1, 6]
         self.ring: List[Node] = []
 
     def add_node(self, node: Node):
@@ -44,6 +44,19 @@ class Chord:
             self.actives.append(node)
             self.actives.sort()
             self.ring[node].active = True
+            self.active_nodes()
+            return 1
+        return -1
+
+    def inactive_node(self, node: int):
+        if len(self.actives) == 1:
+            self.ring[node].active = False
+            self.ring[node].value = []
+            return 1
+        if node >= 0 and node < TOTAL_NODES and node in self.actives:
+            self.actives.remove(node)
+            self.actives.sort()
+            self.ring[node].active = False
             self.active_nodes()
             return 1
         return -1
@@ -66,16 +79,23 @@ class Chord:
                     conjunct2 = self.ring[: ring.key + 1]
                     iterable: List[Node] = [*conjunct1, *conjunct2]
 
+                    conjunct = {}
+
                     for it in iterable:
-                        ring.conjunct.update({it.key: it.value})
+                        conjunct.update({it.key: it.value})
+
+                    ring.conjunct = conjunct
 
                     if curr_idx != last_active:
                         curr_idx = self.actives[self.actives.index(curr_idx) + 1]
 
                 elif ring.key == curr_idx:
                     iterable = self.ring[self.actives[idx - 1] + 1 : ring.key + 1]
+                    conjunct = {}
                     for it in iterable:
-                        ring.conjunct.update({it.key: it.value})
+                        conjunct.update({it.key: it.value})
+
+                    ring.conjunct = conjunct
 
                     if curr_idx != last_active:
                         curr_idx = self.actives[self.actives.index(curr_idx) + 1]
@@ -118,6 +138,7 @@ if __name__ == "__main__":
         print("4 - Buscar")
         print("5 - Inserir um novo valor")
         print("6 - Ativar nó")
+        print("7 - Inativa nó")
         code = int(input("Digite o número o código: "))
         match code:
             case 1:
@@ -156,6 +177,15 @@ if __name__ == "__main__":
                     message = f"Esse nó é inválido"
                 else:
                     message = f"Nó ativado com  sucesso"
+
+                os.system("clear")
+            case 7:
+                value = int(input("Digite o nó que deseja inativar: "))
+                result = chord.inactive_node(value)
+                if result == -1:
+                    message = f"Esse nó é inválido"
+                else:
+                    message = f"Nó inativado com  sucesso"
 
                 os.system("clear")
             case _:

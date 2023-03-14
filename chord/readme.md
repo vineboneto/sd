@@ -9,5 +9,5 @@ O algoritmo deve permitir:
 - [x] Montar um nova rede
 - [x] Inserir dados nos nós da rede
 - [x] Inserir novos nós
-- [ ] Retirar nós
+- [x] Retirar nós
 - [ ] Utilizar finger tables para busca
