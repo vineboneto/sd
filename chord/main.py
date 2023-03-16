@@ -111,17 +111,22 @@ class Chord:
         if node >= 0 and node < TOTAL_NODES and node in self.actives:
             index = self.actives.index(node)
             # head
-            # corrigir apontamentos
             if index == 0:
                 next_node = self.ring[self.ring[node].next]
                 next_node.conjunct = {**self.ring[node].conjunct, **next_node.conjunct}
+                tail = self.actives[len(self.actives) - 1]
+                self.ring[tail].next = next_node.key
             # tail
             elif index == index == len(self.actives) - 1:
                 head_node = self.ring[self.actives[0]]
                 head_node.conjunct = {**self.ring[node].conjunct, **head_node.conjunct}
+                prev = self.ring[self.actives[index - 1]]
+                prev.next = self.ring[node].next
             else:
                 next_node = self.ring[self.ring[node].next]
                 next_node.conjunct = {**self.ring[node].conjunct, **next_node.conjunct}
+                prev = self.ring[self.actives[index - 1]]
+                prev.next = self.ring[node].next
             self.actives.remove(node)
             self.actives.sort()
             self.ring[node].next = -1
