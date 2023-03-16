@@ -28,7 +28,7 @@ class Node:
 
 class Chord:
     def __init__(self):
-        self.actives: List[int] = [1, 6]
+        self.actives: List[int] = [1, 3, 6, 7]
         self.ring: List[Node] = []
 
     def add_node(self, node: Node):
@@ -44,7 +44,44 @@ class Chord:
             self.actives.append(node)
             self.actives.sort()
             self.ring[node].active = True
-            self.active_nodes()
+            index = self.actives.index(node)
+            ## head
+            if index == 0:
+                # 0 1 5 7 11
+                self.ring[node].next = self.actives[index + 1]
+                self.ring[len(self.ring) - 1].next = node
+
+                last_active = self.actives[len(self.actives) - 1]
+
+                it_node = [*self.ring[last_active + 1 : len(self.ring)], *self.ring[: self.ring[node].key + 1]]
+                conjunct_node = {}
+                for it in it_node:
+                    conjunct_node.update({it.key: it.value})
+
+                it_next = self.ring[self.actives[index + 1] : self.ring[node].next + 1]
+                conjunct_next = {}
+                for it in it_next:
+                    conjunct_next.update({it.key: it.value})
+
+                self.ring[node].conjunct = conjunct_node
+                self.ring[self.ring[node].next].conjunct = conjunct_next
+            else:
+                prev = self.actives[index - 1]
+                self.ring[node].next = self.ring[prev].next
+                self.ring[prev].next = node
+
+                it_node = self.ring[self.actives[index - 1] + 1 : self.ring[node].key + 1]
+                conjunct_node = {}
+                for it in it_node:
+                    conjunct_node.update({it.key: it.value})
+
+                it_next = self.ring[self.ring[node].key + 1 : self.ring[node].next]
+                conjunct_next = {}
+                for it in it_next:
+                    conjunct_next.update({it.key: it.value})
+
+                self.ring[node].conjunct = conjunct_node
+                self.ring[self.ring[node].next].conjunct = conjunct_next
             return 1
         return -1
 
@@ -62,7 +99,7 @@ class Chord:
         return -1
 
     def active_nodes(self):
-        curr_idx = self.actives[0]
+        # curr_idx = self.actives[0]
         for ring in self.ring:
             if ring.key in self.actives:
                 idx = self.actives.index(ring.key)
@@ -74,6 +111,7 @@ class Chord:
                 else:
                     ring.next = self.actives[idx + 1]
 
+                # é head
                 if ring.key == self.actives[0]:
                     conjunct1 = self.ring[last_active + 1 : len(self.ring)]
                     conjunct2 = self.ring[: ring.key + 1]
@@ -86,10 +124,10 @@ class Chord:
 
                     ring.conjunct = conjunct
 
-                    if curr_idx != last_active:
-                        curr_idx = self.actives[self.actives.index(curr_idx) + 1]
+                    # if curr_idx != last_active:
+                    #     curr_idx = self.actives[self.actives.index(curr_idx) + 1]
 
-                elif ring.key == curr_idx:
+                else:
                     iterable = self.ring[self.actives[idx - 1] + 1 : ring.key + 1]
                     conjunct = {}
                     for it in iterable:
@@ -97,8 +135,8 @@ class Chord:
 
                     ring.conjunct = conjunct
 
-                    if curr_idx != last_active:
-                        curr_idx = self.actives[self.actives.index(curr_idx) + 1]
+                    # if curr_idx != last_active:
+                    #     curr_idx = self.actives[self.actives.index(curr_idx) + 1]
 
     def search(self, start_key: int, value: str):
         if start_key not in self.actives:
@@ -178,7 +216,7 @@ if __name__ == "__main__":
                 else:
                     message = f"Nó ativado com  sucesso"
 
-                os.system("clear")
+                # os.system("clear")
             case 7:
                 value = int(input("Digite o nó que deseja inativar: "))
                 result = chord.inactive_node(value)
