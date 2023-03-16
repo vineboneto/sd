@@ -135,7 +135,6 @@ class Chord:
         return -1
 
     def start_nodes(self):
-        # curr_idx = self.actives[0]
         for ring in self.ring:
             if ring.key in self.actives:
                 idx = self.actives.index(ring.key)
@@ -160,9 +159,6 @@ class Chord:
 
                     ring.conjunct = conjunct
 
-                    # if curr_idx != last_active:
-                    #     curr_idx = self.actives[self.actives.index(curr_idx) + 1]
-
                 else:
                     iterable = self.ring[self.actives[idx - 1] + 1 : ring.key + 1]
                     conjunct = {}
@@ -170,9 +166,6 @@ class Chord:
                         conjunct.update({it.key: it.value})
 
                     ring.conjunct = conjunct
-
-                    # if curr_idx != last_active:
-                    #     curr_idx = self.actives[self.actives.index(curr_idx) + 1]
 
     def search(self, start_key: int, value: str):
         if start_key not in self.actives:
