@@ -109,15 +109,27 @@ class Chord:
             self.ring[node].value = []
             return 1
         if node >= 0 and node < TOTAL_NODES and node in self.actives:
+            index = self.actives.index(node)
+            # head
+            # corrigir apontamentos
+            if index == 0:
+                next_node = self.ring[self.ring[node].next]
+                next_node.conjunct = {**self.ring[node].conjunct, **next_node.conjunct}
+            # tail
+            elif index == index == len(self.actives) - 1:
+                head_node = self.ring[self.actives[0]]
+                head_node.conjunct = {**self.ring[node].conjunct, **head_node.conjunct}
+            else:
+                next_node = self.ring[self.ring[node].next]
+                next_node.conjunct = {**self.ring[node].conjunct, **next_node.conjunct}
             self.actives.remove(node)
             self.actives.sort()
+            self.ring[node].next = -1
             self.ring[node].active = False
-            index = self.actives.index(node)
-
             return 1
         return -1
 
-    def active_nodes(self):
+    def start_nodes(self):
         # curr_idx = self.actives[0]
         for ring in self.ring:
             if ring.key in self.actives:
@@ -204,12 +216,11 @@ if __name__ == "__main__":
                 chord = Chord()
                 for i in range(TOTAL_NODES):
                     chord.add_node(Node(i))
-                chord.active_nodes()
+                chord.start_nodes()
 
                 for data in DATA:
                     chord.add_value(data)
                 message = "Criado com sucesso"
-                os.system("clear")
             case 3:
                 chord.display()
                 message = ""
@@ -221,12 +232,10 @@ if __name__ == "__main__":
                     message = "Valor não encontrado"
                 else:
                     message = f"Valor encontrado no nó {node}"
-                os.system("clear")
             case 5:
                 value = str(input("Digite o novo valor a ser inserido: "))
                 node = chord.add_value(value)
                 message = f"Inserido com sucesso no nó {node}"
-                os.system("clear")
             case 6:
                 value = int(input("Digite o nó que deseja ativar: "))
                 result = chord.active_node(value)
@@ -234,8 +243,6 @@ if __name__ == "__main__":
                     message = f"Esse nó é inválido"
                 else:
                     message = f"Nó ativado com  sucesso"
-
-                # os.system("clear")
             case 7:
                 value = int(input("Digite o nó que deseja inativar: "))
                 result = chord.inactive_node(value)
@@ -244,7 +251,5 @@ if __name__ == "__main__":
                 else:
                     message = f"Nó inativado com  sucesso"
 
-                os.system("clear")
             case _:
                 message = "Opção inválida"
-                os.system("clear")
