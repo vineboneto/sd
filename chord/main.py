@@ -47,13 +47,11 @@ class Chord:
             index = self.actives.index(node)
             ## head
             if index == 0:
-                # 0 1 5 7 11
+                tail = self.actives[len(self.actives) - 1]
                 self.ring[node].next = self.actives[index + 1]
-                self.ring[len(self.ring) - 1].next = node
+                self.ring[tail].next = node
 
-                last_active = self.actives[len(self.actives) - 1]
-
-                it_node = [*self.ring[last_active + 1 : len(self.ring)], *self.ring[: self.ring[node].key + 1]]
+                it_node = [*self.ring[tail + 1 : len(self.ring)], *self.ring[: self.ring[node].key + 1]]
                 conjunct_node = {}
                 for it in it_node:
                     conjunct_node.update({it.key: it.value})
@@ -65,6 +63,26 @@ class Chord:
 
                 self.ring[node].conjunct = conjunct_node
                 self.ring[self.ring[node].next].conjunct = conjunct_next
+
+            # tail
+            elif index == len(self.actives) - 1:
+                prev = self.actives[index - 1]
+                self.ring[node].next = self.ring[prev].next
+                self.ring[prev].next = node
+
+                it_node = self.ring[self.actives[index - 1] + 1 : self.ring[node].key + 1]
+                conjunct_node = {}
+                for it in it_node:
+                    conjunct_node.update({it.key: it.value})
+
+                it_next = [*self.ring[self.ring[node].key + 1 : len(self.ring)], *self.ring[: self.ring[node].next + 1]]
+                conjunct_next = {}
+                for it in it_next:
+                    conjunct_next.update({it.key: it.value})
+
+                self.ring[node].conjunct = conjunct_node
+                self.ring[self.ring[node].next].conjunct = conjunct_next
+
             else:
                 prev = self.actives[index - 1]
                 self.ring[node].next = self.ring[prev].next
@@ -75,7 +93,7 @@ class Chord:
                 for it in it_node:
                     conjunct_node.update({it.key: it.value})
 
-                it_next = self.ring[self.ring[node].key + 1 : self.ring[node].next]
+                it_next = self.ring[self.ring[node].key + 1 : self.ring[node].next + 1]
                 conjunct_next = {}
                 for it in it_next:
                     conjunct_next.update({it.key: it.value})
@@ -94,7 +112,8 @@ class Chord:
             self.actives.remove(node)
             self.actives.sort()
             self.ring[node].active = False
-            self.active_nodes()
+            index = self.actives.index(node)
+
             return 1
         return -1
 
