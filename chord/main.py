@@ -21,7 +21,7 @@ class Node:
     def __init__(self, key: int = -1):
         self.key: int = key
         self.value: List[str] = []
-        self.conjunct: Dict[int, str] = dict()
+        self.conjunct: Dict[int, List[str]] = dict()
         self.active: bool = False
         self.next: int = -1
 
