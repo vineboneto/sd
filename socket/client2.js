@@ -20,13 +20,13 @@ const encodeMessage = (channel, message) =>
 
 const decodeMessage = (message) => JSON.parse(message);
 
+let name;
+
 socket.connect(5000, "localhost", () => {
   console.log("Conectado ao servidor!");
 
   socket.write(encodeMessage("ping", ""));
 });
-
-let name;
 
 socket.on("data", async (data) => {
   const message = data.toString().trim();
