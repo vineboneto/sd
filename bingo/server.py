@@ -20,6 +20,10 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
     def get_auth_players(self):
         return list(self.authenticated_users.keys())
 
+    def notify_all(self, message):
+        for _, client in self.authenticated_users.items():
+            client["queue"].put(message)
+
     def Login(self, request, context):
         try:
             username = request.username
@@ -65,10 +69,6 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                 )
         except Exception as e:
             yield bingo_pb2.LoginResponse(token="", playersLoggedIn=[], playersReady=[], status=500, message=str(e))
-
-    def notify_all(self, message):
-        for _, client in self.authenticated_users.items():
-            client["queue"].put(message)
 
     def Ready(self, request, context):
         username = request.username
