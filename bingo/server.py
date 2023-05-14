@@ -1,9 +1,10 @@
 import grpc
 import uuid
 import queue
+import concurrent.futures as futures
+
 import proto.bingo_pb2 as bingo_pb2
 import proto.bingo_pb2_grpc as bingo_pb2_grpc
-import concurrent.futures as futures
 
 
 class BingoService(bingo_pb2_grpc.BingoServicer):
