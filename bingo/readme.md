@@ -1,9 +1,8 @@
 ```bash
-$ source ./venv/bin/activate
+$ source ./venv/bin/activate # ./venv/Scripts/activate
 
-$ pip install grpc_tools
+$ pip install -r requirements
 
-$ python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. bingo.proto
 
-$ protoc -I=. --python_out=. bingo.proto
+$ ./compile_proto.sh # ./compile_proto.ps1
 ```

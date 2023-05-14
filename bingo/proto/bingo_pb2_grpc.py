@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import bingo_pb2 as bingo__pb2
+from proto import bingo_pb2 as proto_dot_bingo__pb2
 
 
 class BingoStub(object):
@@ -16,23 +16,23 @@ class BingoStub(object):
         """
         self.Login = channel.unary_stream(
                 '/bingo.Bingo/Login',
-                request_serializer=bingo__pb2.LoginRequest.SerializeToString,
-                response_deserializer=bingo__pb2.LoginResponse.FromString,
+                request_serializer=proto_dot_bingo__pb2.LoginRequest.SerializeToString,
+                response_deserializer=proto_dot_bingo__pb2.LoginResponse.FromString,
                 )
         self.Ready = channel.unary_unary(
                 '/bingo.Bingo/Ready',
-                request_serializer=bingo__pb2.ReadyRequest.SerializeToString,
-                response_deserializer=bingo__pb2.ReadyResponse.FromString,
+                request_serializer=proto_dot_bingo__pb2.ReadyRequest.SerializeToString,
+                response_deserializer=proto_dot_bingo__pb2.ReadyResponse.FromString,
                 )
         self.Play = channel.unary_stream(
                 '/bingo.Bingo/Play',
-                request_serializer=bingo__pb2.PlayRequest.SerializeToString,
-                response_deserializer=bingo__pb2.GameStatusResponse.FromString,
+                request_serializer=proto_dot_bingo__pb2.PlayRequest.SerializeToString,
+                response_deserializer=proto_dot_bingo__pb2.GameStatusResponse.FromString,
                 )
         self.CheckWin = channel.unary_unary(
                 '/bingo.Bingo/CheckWin',
-                request_serializer=bingo__pb2.WinCheckRequest.SerializeToString,
-                response_deserializer=bingo__pb2.WinCheckResponse.FromString,
+                request_serializer=proto_dot_bingo__pb2.WinCheckRequest.SerializeToString,
+                response_deserializer=proto_dot_bingo__pb2.WinCheckResponse.FromString,
                 )
 
 
@@ -68,23 +68,23 @@ def add_BingoServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Login': grpc.unary_stream_rpc_method_handler(
                     servicer.Login,
-                    request_deserializer=bingo__pb2.LoginRequest.FromString,
-                    response_serializer=bingo__pb2.LoginResponse.SerializeToString,
+                    request_deserializer=proto_dot_bingo__pb2.LoginRequest.FromString,
+                    response_serializer=proto_dot_bingo__pb2.LoginResponse.SerializeToString,
             ),
             'Ready': grpc.unary_unary_rpc_method_handler(
                     servicer.Ready,
-                    request_deserializer=bingo__pb2.ReadyRequest.FromString,
-                    response_serializer=bingo__pb2.ReadyResponse.SerializeToString,
+                    request_deserializer=proto_dot_bingo__pb2.ReadyRequest.FromString,
+                    response_serializer=proto_dot_bingo__pb2.ReadyResponse.SerializeToString,
             ),
             'Play': grpc.unary_stream_rpc_method_handler(
                     servicer.Play,
-                    request_deserializer=bingo__pb2.PlayRequest.FromString,
-                    response_serializer=bingo__pb2.GameStatusResponse.SerializeToString,
+                    request_deserializer=proto_dot_bingo__pb2.PlayRequest.FromString,
+                    response_serializer=proto_dot_bingo__pb2.GameStatusResponse.SerializeToString,
             ),
             'CheckWin': grpc.unary_unary_rpc_method_handler(
                     servicer.CheckWin,
-                    request_deserializer=bingo__pb2.WinCheckRequest.FromString,
-                    response_serializer=bingo__pb2.WinCheckResponse.SerializeToString,
+                    request_deserializer=proto_dot_bingo__pb2.WinCheckRequest.FromString,
+                    response_serializer=proto_dot_bingo__pb2.WinCheckResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -108,8 +108,8 @@ class Bingo(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/bingo.Bingo/Login',
-            bingo__pb2.LoginRequest.SerializeToString,
-            bingo__pb2.LoginResponse.FromString,
+            proto_dot_bingo__pb2.LoginRequest.SerializeToString,
+            proto_dot_bingo__pb2.LoginResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -125,8 +125,8 @@ class Bingo(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/bingo.Bingo/Ready',
-            bingo__pb2.ReadyRequest.SerializeToString,
-            bingo__pb2.ReadyResponse.FromString,
+            proto_dot_bingo__pb2.ReadyRequest.SerializeToString,
+            proto_dot_bingo__pb2.ReadyResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -142,8 +142,8 @@ class Bingo(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/bingo.Bingo/Play',
-            bingo__pb2.PlayRequest.SerializeToString,
-            bingo__pb2.GameStatusResponse.FromString,
+            proto_dot_bingo__pb2.PlayRequest.SerializeToString,
+            proto_dot_bingo__pb2.GameStatusResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -159,7 +159,7 @@ class Bingo(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/bingo.Bingo/CheckWin',
-            bingo__pb2.WinCheckRequest.SerializeToString,
-            bingo__pb2.WinCheckResponse.FromString,
+            proto_dot_bingo__pb2.WinCheckRequest.SerializeToString,
+            proto_dot_bingo__pb2.WinCheckResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
