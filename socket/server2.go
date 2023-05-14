@@ -140,12 +140,9 @@ func onNewConnection(conn net.Conn) {
 			for i, student := range students {
 				if student["name"] == name && student["isAuth"] == true {
 					if answers[question] == answer {
-						emit(conn, encodeMessage("answer", "true"))
 						students[i]["acertos"] = student["acertos"].(int) + 1
-					} else {
-						emit(conn, encodeMessage("answer", "false"))
+						break
 					}
-					break
 				}
 			}
 		}

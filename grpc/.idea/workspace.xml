@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="af918d11-746d-4318-b680-44a27b86f753" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../socket/client2.js" beforeDir="false" afterPath="$PROJECT_DIR$/../socket/client2.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../socket/server1.go" beforeDir="false" afterPath="$PROJECT_DIR$/../socket/server1.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../socket/server2.go" beforeDir="false" afterPath="$PROJECT_DIR$/../socket/server2.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2ON4RSO70IvV323ABU2sbJliSNi" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "/home/vineboneto/dev/sd/grpc"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="af918d11-746d-4318-b680-44a27b86f753" name="Changes" comment="" />
+      <created>1681387696243</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1681387696243</updated>
+    </task>
+    <servers />
+  </component>
+</project>

@@ -1,0 +1,38 @@
+syntax = "proto3";
+package agenda;
+import "google/protobuf/timestamp.proto";
+// Para indicar que a compilação deverá gerar múltiplos arquivos .java
+option java_multiple_files = true;
+// Para indicar o nome do pacote das classes Java que serão geradas
+option java_package = "engtelecom.std.agenda";
+// Para indicar o nome da classe Java que será gerada na compilação
+option java_outer_classname = "AgendaProtos";
+// Definição das estruturas de dados para representar uma Pessoa
+message Pessoa {
+    int32 id = 1;
+    string nome = 2;
+    string email = 3;
+    // Enumeration para indicar os valores permitidos para indicar o tipo de telefone
+    enum TipoTelefone {
+      CELULAR = 0;
+      RESIDENCIAL = 1;
+      TRABALHO = 2;
+    }
+    // Todo telefone deve ter um número e um rótulo (tipo do telefone)
+    message NumeroTelefone {
+    string numero = 1;
+    TipoTelefone tipo = 2;
+    }
+    // para indicar que um contato poderá ter vários telefones
+    repeated NumeroTelefone telefones = 4;
+    // para registrar quando o contato foi criado
+    google.protobuf.Timestamp last_updated = 5;
+  }
+  message Resposta{
+    string resultado = 1;
+  }
+  // Definição da interface do serviço (métodos que poderão ser invocados)
+  service Agenda {
+    rpc adicionar (Pessoa) returns (Resposta) {}
+    rpc buscar(Pessoa) returns (Pessoa){}
+  }

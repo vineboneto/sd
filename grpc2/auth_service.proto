@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc Authenticate (AuthRequest) returns (AuthResponse);
+  rpc Quiz (QuizRequest) returns (QuizResponse);
+}
+
+message AuthRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message QuizRequest {
+  string token = 1;
+  repeated int32 answers = 2;
+}
+
+message QuizResponse {
+  repeated string questions = 1;
+  repeated string options = 2;
+  int32 correct_answers = 3;
+}

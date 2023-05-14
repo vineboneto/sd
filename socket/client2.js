@@ -65,10 +65,6 @@ socket.on("data", async (data) => {
     await handleQuestion();
   }
 
-  if (channel === "answer") {
-    console.log(content);
-  }
-
   if (channel === "question-finish") {
     console.log(content);
   }

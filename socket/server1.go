@@ -17,7 +17,7 @@ type SocketMessage struct {
 func decodeMessage(buffer []byte) SocketMessage {
 	message := string(buffer)
 
-	message = strings.Trim(message, " \t\n\r\x00")
+	message = strings.Trim(message, "\x00")
 
 	socketMessage := SocketMessage{}
 
