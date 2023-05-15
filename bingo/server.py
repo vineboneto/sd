@@ -1,6 +1,7 @@
 import grpc
 import uuid
 import queue
+import numpy as np
 import concurrent.futures as futures
 
 import proto.bingo_pb2 as bingo_pb2
@@ -24,6 +25,34 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         for _, client in self.authenticated_users.items():
             client["queue"].put(message)
 
+    def notify(self, message, username):
+        self.authenticated_users[username]["queue"].put(message)
+
+    def queue_login(self, username):
+        try:
+            message = self.authenticated_users[username]["queue"].get(timeout=1)
+
+            if message:
+                yield bingo_pb2.LoginResponse(
+                    token=self.authenticated_users[username]["token"],
+                    playersLoggedIn=self.get_auth_players(),
+                    playersReady=self.get_ready_players(),
+                    status=200,
+                    message=message,
+                )
+        except queue.Empty:
+            pass
+
+    def create_new_user(self, username):
+        token = uuid.uuid4().hex
+        self.authenticated_users[username] = {
+            "token": token,
+            "authenticated": True,
+            "ready": False,
+            "queue": queue.Queue(),
+            "card": [],
+        }
+
     def Login(self, request, context):
         try:
             username = request.username
@@ -35,56 +64,61 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                 return
 
             if not username in self.authenticated_users:
-                token = uuid.uuid4().hex
-                self.authenticated_users[username] = {
-                    "token": token,
-                    "authenticated": True,
-                    "ready": False,
-                    "queue": queue.Queue(),
-                }
+                self.create_new_user(username)
 
-                self.notify_all(f"{username} has joined the game")
+                self.notify_all(message=f"{username} has joined the game")
 
                 while self.active_streaming:
-                    try:
-                        message = self.authenticated_users[username]["queue"].get(timeout=1)
-                        if message:
-                            yield bingo_pb2.LoginResponse(
-                                token=token,
-                                playersLoggedIn=self.get_auth_players(),
-                                playersReady=self.get_ready_players(),
-                                status=200,
-                                message=message,
-                            )
-                    except queue.Empty:
-                        pass
-
+                    for response in self.queue_login(username):
+                        yield response
             else:
-                yield bingo_pb2.LoginResponse(
-                    token=self.authenticated_users[username]["token"],
-                    playersLoggedIn=self.get_auth_players(),
-                    playersReady=self.get_ready_players(),
-                    status=200,
-                    message="Already logged in",
-                )
+                self.notify(message="Already logged in", username=username)
+
+                while self.active_streaming:
+                    for response in self.queue_login(username):
+                        yield response
         except Exception as e:
             yield bingo_pb2.LoginResponse(token="", playersLoggedIn=[], playersReady=[], status=500, message=str(e))
 
     def Ready(self, request, context):
-        username = request.username
-        token = request.token
+        try:
+            username = request.username
+            token = request.token
 
-        if username in self.authenticated_users.keys() and self.authenticated_users[username]["token"] == token:
+            if username in self.authenticated_users.keys():
+                current_user = self.authenticated_users[username]
+                if current_user["ready"] == True:
+                    return bingo_pb2.ReadyResponse(
+                        card=current_user["card"],
+                        status=200,
+                        message="Ready successful",
+                    )
+
+                if current_user["token"] == token:
+                    card = np.random.choice(100, size=25, replace=False)
+                    card[12] = -1
+                    self.authenticated_users[username]["ready"] = True
+                    self.authenticated_users[username]["card"] = card
+                    self.notify_all(message=f"{username} is ready")
+
+                    return bingo_pb2.ReadyResponse(
+                        card=current_user["card"],
+                        status=200,
+                        message="Ready successful",
+                    )
+
             return bingo_pb2.ReadyResponse(
-                card=[1, 2, 3],
-                status=200,
-                message="Ready successful",
+                card=[],
+                status=400,
+                message="Invalid username or token",
             )
-        return bingo_pb2.ReadyResponse(
-            card=[],
-            status=400,
-            message="Invalid username or token",
-        )
+        except Exception as e:
+            print(str(e))
+            return bingo_pb2.ReadyResponse(
+                card=[],
+                status=500,
+                message=str(e),
+            )
 
     def Play(self, request, context):
         return super().Play(request, context)
@@ -99,7 +133,7 @@ def serve():
 
     service = BingoService()
 
-    s = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    s = grpc.server(futures.ThreadPoolExecutor(max_workers=30))
     bingo_pb2_grpc.add_BingoServicer_to_server(service, s)
     s.add_insecure_port("[::]:50051")
     s.start()
