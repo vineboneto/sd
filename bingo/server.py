@@ -19,6 +19,7 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         self.numbers_played = []
         self.is_number_generated = False
         self.interval_number = 15
+        self.thread_number = threading.Thread(target=self.number_generation_thread)
 
     def get_ready_players(self):
         read_players = [user for user, details in self.authenticated_users.items() if details["ready"]]
@@ -183,9 +184,8 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                 return
 
             if self.is_auth(username, token):
-                thread_number = threading.Thread(target=self.number_generation_thread)
                 if not self.is_number_generated:
-                    thread_number.start()
+                    self.thread_number.start()
 
                 current_user = self.authenticated_users[username]
                 while self.is_streaming_game and self.is_play_game:
@@ -199,7 +199,7 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                             for user in self.authenticated_users.values():
                                 user["ready"] = False
                                 user["card"] = []
-                            thread_number.join()
+                            self.thread_number.join()
                             yield bingo_pb2.GameStatusResponse(
                                 number=-1,
                                 winner=winner,
