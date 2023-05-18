@@ -18,8 +18,10 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         self.authenticated_users = {}
         self.numbers_played = []
         self.is_number_generated = False
-        self.interval_number = 15
+        self.interval_number = 1
         self.thread_number = threading.Thread(target=self.number_generation_thread)
+        self.lock_number = threading.Lock()
+        self.winner = None
 
     def get_ready_players(self):
         read_players = [user for user, details in self.authenticated_users.items() if details["ready"]]
@@ -39,8 +41,11 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         if len(self.numbers_played) == 100:
             self.is_number_generated = False
             return -1
-        available_numbers = np.setdiff1d(np.arange(1, 100), self.numbers_played)
-        random_number = np.random.choice(available_numbers)
+        # Crie uma lista de possíveis números que ainda não foram gerados.
+        available_numbers = [i for i in range(100) if str(i) not in self.numbers_played]
+
+        # Escolha um número de `numeros_possiveis` de forma aleatória.
+        random_number = np.random.choice(available_numbers, replace=False)
 
         self.numbers_played.append(str(random_number))
 
@@ -82,15 +87,17 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         return username in self.authenticated_users.keys() and self.authenticated_users[username]["token"] == token
 
     def number_generation_thread(self):
+        self.winner = None
         self.is_number_generated = True
         while self.is_number_generated:
-            random_number = self.generate_random_number()
+            with self.lock_number:
+                random_number = self.generate_random_number()
 
-            print(f"Number generated: {random_number}")
+                print(f"Number generated: {random_number}")
 
-            self.notify_all(message=("", random_number), queue="queue_play")
+                self.notify_all(message=("", random_number), queue="queue_play")
 
-            time.sleep(self.interval_number)
+                time.sleep(self.interval_number)
 
     def create_new_user(self, username):
         token = uuid.uuid4().hex
@@ -144,7 +151,7 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                         message="Ready successful",
                     )
 
-                card = np.random.choice(100, size=25, replace=False)
+                card = np.random.choice(range(0, 100), size=25, replace=False)
                 card[12] = -1
                 self.authenticated_users[username]["ready"] = True
                 self.authenticated_users[username]["card"] = card
@@ -239,6 +246,12 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
 
         try:
             if self.is_auth(username, token):
+                if self.winner:
+                    return bingo_pb2.WinCheckResponse(
+                        status=200,
+                        message=f"the game is over, {self.winner} won",
+                    )
+
                 not_found_number = self.get_not_found_number(username)
 
                 if not_found_number:
@@ -247,6 +260,7 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
                         message=f"Not found: {', '.join(not_found_number)}",
                     )
                 else:
+                    self.winner = username
                     self.notify_all(message=(username, None), queue="queue_play")
                     return bingo_pb2.WinCheckResponse(
                         status=200,
@@ -281,6 +295,7 @@ def serve():
         print("Stopping server...")
         service.is_streaming_game = False
         service.is_play_game = False
+        service.is_number_generated = False
         s.stop(grace=0)
 
     signal.signal(signal.SIGINT, stop_server)
