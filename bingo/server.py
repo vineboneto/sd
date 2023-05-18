@@ -41,10 +41,8 @@ class BingoService(bingo_pb2_grpc.BingoServicer):
         if len(self.numbers_played) == 100:
             self.is_number_generated = False
             return -1
-        # Crie uma lista de possíveis números que ainda não foram gerados.
         available_numbers = [i for i in range(100) if str(i) not in self.numbers_played]
 
-        # Escolha um número de `numeros_possiveis` de forma aleatória.
         random_number = np.random.choice(available_numbers, replace=False)
 
         self.numbers_played.append(str(random_number))
