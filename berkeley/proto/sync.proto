@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service TimeSync {
+  rpc SendTime (TimeRequest) returns (TimeReply) {}
+}
+
+message TimeRequest {
+  int32 client_id = 1;
+  double client_time = 2;
+}
+
+message TimeReply {
+  double average_difference = 1;
+}
