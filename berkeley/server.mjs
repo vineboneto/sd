@@ -1,73 +1,59 @@
-import { Server } from "socket.io";
+import { Server } from 'socket.io'
 
-const io = new Server(3000);
+const io = new Server(3000)
 
-const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms = 1000) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const connections = {};
+let responses = []
+const connections = new Map()
+const TIME_SYNC_INTERVAL_MS = 1000 * 10 // sync time every 5 seconds
 
-let serverDate = new Date();
-console.log(`Initial server date: ${serverDate.toISOString()}`);
-let responseCount = 0;
+io.on('connection', (socket) => {
+  console.log(`Novo cliente conectado: ${socket.id}`)
 
-io.on("connection", async (socket) => {
-  console.log(`Novo cliente conectado: ${socket.id}`);
+  connections.set(socket.id, { ...connections.get(socket.id), socket })
 
-  connections[socket.id] = {
-    ...connections[socket.id],
-    socket: socket,
-    diffInSeconds: 0,
-  };
+  const p = new Promise((resolve) => {
+    socket.on('sync:diff', (data) => {
+      // store the data
+      connections.set(socket.id, { ...connections.get(socket.id), diffInSeconds: data.diff })
 
-  socket.on("sync:diff", (data) => {
-    responseCount++;
-    const diffTimeClient = data.diff;
+      resolve()
+    })
+  })
 
-    connections[socket.id] = {
-      ...connections[socket.id],
-      diffInSeconds: diffTimeClient,
-    };
+  responses.push(p)
 
-    if (responseCount >= 4) {
-      const sumTimeInSeconds = Object.values(connections).reduce(
-        (acc, curr) => {
-          return acc + curr.diffInSeconds;
-        },
-        0
-      );
+  setInterval(() => {
+    if (connections.size === 0) return
 
-      const meanTime = sumTimeInSeconds / Object.keys(connections).length;
+    // send the time to all clients
+    const date = new Date()
+    console.log(`Initial server date: ${date.toISOString()}`)
+    io.emit('sync:time', date.toISOString())
 
-      serverDate.setSeconds(serverDate.getSeconds() + meanTime);
+    Promise.all(responses)
+      .then(() => {
+        // calcular media
+        const sumTimeInSeconds = Array.from(connections.values()).reduce((acc, curr) => acc + curr.diffInSeconds, 0)
+        const meanTime = sumTimeInSeconds / connections.size
 
-      for (let key of Object.keys(connections)) {
-        const diffTime = connections[key].diffInSeconds;
-        if (diffTime < 0) {
-          connections[key].socket.emit(
-            "sync:time:client",
-            Math.abs(diffTime + meanTime)
-          );
-        } else {
-          connections[key].socket.emit(
-            "sync:time:client",
-            diffTime * -1 + meanTime
-          );
+        // ajustar tempo servidor
+        date.setSeconds(date.getSeconds() + meanTime)
+
+        // notificar clientes
+        for (let key of connections.keys()) {
+          const diffTime = connections.get(key).diffInSeconds
+
+          if (diffTime < 0) connections.get(key).socket.emit('sync:time:client', Math.abs(diffTime + meanTime))
+          else connections.get(key).socket.emit('sync:time:client', diffTime * -1 + meanTime)
         }
-      }
 
-      console.log(`Server date: ${serverDate.toISOString()}`);
-
-      responseCount = 0;
-    }
-  });
-
-  if (Object.keys(connections).length >= 4) {
-    const date = new Date();
-
-    io.emit("sync:time", date.toISOString());
-  }
-});
-
-io.on("disconnect", (socket) => {
-  delete connections[socket.id];
-});
+        console.log(`Server date: ${date.toISOString()}`)
+      })
+      .catch(console.error)
+      .finally(() => {
+        responses = []
+      })
+  }, TIME_SYNC_INTERVAL_MS)
+})
