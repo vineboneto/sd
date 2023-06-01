@@ -13,16 +13,15 @@ io.on('connection', (socket) => {
 
   connections.set(socket.id, { ...connections.get(socket.id), socket })
 
-  const p = new Promise((resolve) => {
+  const promise = new Promise((resolve) => {
     socket.on('sync:diff', (data) => {
       // store the data
       connections.set(socket.id, { ...connections.get(socket.id), diffInSeconds: data.diff })
-
       resolve()
     })
   })
 
-  responses.push(p)
+  responses.push(promise)
 
   setInterval(() => {
     if (connections.size === 0) return
@@ -57,4 +56,9 @@ io.on('connection', (socket) => {
         responses = []
       })
   }, TIME_SYNC_INTERVAL_MS)
+})
+
+io.on('disconnect', (socket) => {
+  console.log(`Cliente desconectado: ${socket.id}`)
+  connections.delete(socket.id)
 })

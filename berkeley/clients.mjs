@@ -17,9 +17,9 @@ if (process.argv[2] !== 'client') {
   }
 } else {
   // Clientes x minutos adiantados
-  let date = new Date()
-  date.setMinutes(date.getMinutes() + getRandomInt(1, 100))
+  const date = new Date()
   const id = process.argv[3]
+  date.setMinutes(date.getMinutes() + getRandomInt(1, 100))
   console.log(`Processo criado ${id}, initial date: ${date.toISOString()}`)
 
   const socket = io('http://localhost:3000')
