@@ -44,9 +44,10 @@ io.on('connection', (socket) => {
         // notificar clientes
         for (let key of connections.keys()) {
           const diffTime = connections.get(key).diffInSeconds
+          const socket = connections.get(key).socket
 
-          if (diffTime < 0) connections.get(key).socket.emit('sync:time:client', Math.abs(diffTime + meanTime))
-          else connections.get(key).socket.emit('sync:time:client', diffTime * -1 + meanTime)
+          if (diffTime < 0) socket.emit('sync:time:client', Math.abs(diffTime + meanTime))
+          else socket.emit('sync:time:client', diffTime * -1 + meanTime)
         }
 
         console.log(`Server date: ${date.toISOString()}`)
